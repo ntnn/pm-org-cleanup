@@ -55,9 +55,34 @@ _assign_to_contributors() {
     done
 }
 
+_remove_from_obsolete() {
+    local contributors
+    contributors=" $(members contributors | tr '\n' ' ') "
+    for team in $(obsolete_teams); do
+        log "$team"
+        for user in $(members "$team"); do
+            [[ $contributors == *" $user "* ]] || { echo "    keeping $user (not in contributors)"; continue; }
+            gh api -X DELETE "orgs/$org/teams/$team/memberships/$user" > /dev/null \
+                && echo "    removed $user" \
+                || log "removing $user from $team failed"
+        done
+    done
+}
+
 _delete_teams() {
     for team in $(obsolete_teams); do
         log "$team"
+        gh api -X DELETE "orgs/$org/teams/$team" || log "deleting $team failed"
+    done
+}
+
+_delete_empty_teams() {
+    for team in $(obsolete_teams); do
+        if [[ -n $(members "$team") ]]; then
+            log "keeping $team (has members)"
+            continue
+        fi
+        log "deleting $team"
         gh api -X DELETE "orgs/$org/teams/$team" || log "deleting $team failed"
     done
 }
@@ -68,6 +93,8 @@ shift
 case "$subcmd" in
     (plan) _plan;;
     (assign-to-contributors) _assign_to_contributors;;
+    (remove-from-obsolete) _remove_from_obsolete;;
     (delete-teams) _delete_teams ;;
+    (delete-empty-teams) _delete_empty_teams;;
     (*) die "Unknown subcommand: $subcmd";;
 esac
