@@ -38,11 +38,26 @@ _drop-covered-teams() {
     done
 }
 
+_remove-users() {
+    local contributors
+    contributors=" $(contributors_members | tr '\n' ' ') "
+    for name in $(each_repo); do
+        log "$name"
+        for user in $(gh api "repos/$org/$name/collaborators?affiliation=direct" --paginate -q '.[].login'); do
+            [[ $contributors == *" $user "* ]] || { echo "    keeping $user (not in contributors)"; continue; }
+            gh api -X DELETE "repos/$org/$name/collaborators/$user" \
+                && echo "    removed $user" \
+                || log "removing $user from $name failed"
+        done
+    done
+}
+
 subcmd="$1"
 shift
 
 case "$subcmd" in
     (missing-from-contributors) _missing-from-contributors;;
     (drop-covered-teams) _drop-covered-teams;;
+    (remove-users) _remove-users;;
     (*) die "Unknown subcommand: $subcmd";;
 esac
