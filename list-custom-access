@@ -11,7 +11,7 @@ for name in $(gh repo list "$org" --no-archived --limit 200 --json name -q '.[].
     gh api "repos/$org/$name/collaborators?affiliation=direct" --paginate \
         -q '.[] | "    user: " + .login + " -> " + .role_name' \
         || log "listing collaborators failed for $name"
-    gh api "repos/$org/$name/teams" --paginate \
-        -q '.[] | "    team: " + .slug + " -> " + .permission' \
-        || log "listing teams failed for $name"
+    # gh api "repos/$org/$name/teams" --paginate \
+    #     -q '.[] | "    team: " + .slug + " -> " + .permission' \
+    #     || log "listing teams failed for $name"
 done
