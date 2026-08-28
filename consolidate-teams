@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+log() { echo ">>> $@"; }
+die() { echo "$@" >&2; exit 1; }
+
+org=platform-mesh
+
+keep=(
+    contributors
+    go-approvers
+    go-maintainers
+    node-maintainers
+    release-managers
+    tsc
+    security
+)
+
+kept() {
+    local slug
+    for slug in "${keep[@]}"; do
+        [[ $slug == "$1" ]] && return 0
+    done
+    return 1
+}
+
+obsolete_teams() {
+    local slug
+    for slug in $(gh api "orgs/$org/teams" --paginate -q '.[].slug'); do
+        kept "$slug" || echo "$slug"
+    done
+}
+
+members() {
+    gh api "orgs/$org/teams/$1/members" --paginate -q '.[].login'
+}
+
+_plan() {
+    for team in $(obsolete_teams); do
+        log "delete $team"
+        for user in $(members "$team"); do
+            echo "    move $user to contributors"
+        done
+    done
+}
+
+_assign_to_contributors() {
+    for team in $(obsolete_teams); do
+        log "$team"
+        for user in $(members "$team"); do
+            if ! gh api -X PUT "orgs/$org/teams/contributors/memberships/$user" > /dev/null ; then
+                log "adding $user to contributors failed - not deleting $team"
+            fi
+            echo "    $user added to contributors"
+        done
+    done
+}
+
+_delete_teams() {
+    for team in $(obsolete_teams); do
+        log "$team"
+        gh api -X DELETE "orgs/$org/teams/$team" || log "deleting $team failed"
+    done
+}
+
+subcmd="$1"
+shift
+
+case "$subcmd" in
+    (plan) _plan;;
+    (assign-to-contributors) _assign_to_contributors;;
+    (delete-teams) _delete_teams ;;
+    (*) die "Unknown subcommand: $subcmd";;
+esac
