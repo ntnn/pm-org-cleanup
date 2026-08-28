@@ -1,0 +1,36 @@
+{
+    "name": "default branch - quality gate",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+        "ref_name": {
+            "include": ["~DEFAULT_BRANCH"],
+            "exclude": []
+        },
+        "repository_property": {
+            "include": [
+                {
+                    "name": "REPO_TYPE",
+                    "source": "custom",
+                    "property_values": ["GO_APP", "GO_MODULE", "NODE_APP", "NODE_MODULE"]
+                }
+            ],
+            "exclude": []
+        }
+    },
+    "rules": [
+        {
+            "type": "required_status_checks",
+            "parameters": {
+                "do_not_enforce_on_create": true,
+                "strict_required_status_checks_policy": true,
+                "required_status_checks": [
+                    { "context": "quality-gate" }
+                ]
+            }
+        }
+    ],
+    "bypass_actors": [
+        { "actor_id": 1415820, "actor_type": "Integration", "bypass_mode": "always" }
+    ]
+}

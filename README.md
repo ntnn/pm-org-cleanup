@@ -24,7 +24,7 @@ bots like renovate and platform-mesh-publisher are excluded because they need to
 ## rulesets/default-branch.json
 
 Blocks deleting or force pushing to the default branch.
-Requires PRs with a code owner review.
+Requires PRs with a code owner review, dismissed reviews etcpp
 
 release-managers are not excluded.
 
@@ -38,3 +38,7 @@ Same as branches but for tags.
 Here only platform-mesh-publisher is excluded because it creates tags for release candidates and builds.
 
 repository admins are not exclude.
+
+## rulesets/quality-gate.json
+
+Requires the `quality-gate` job to pass on PRs in some repo types.
