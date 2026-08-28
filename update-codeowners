@@ -74,17 +74,19 @@ tsc=@platform-mesh/tsc
 # tsc owner
 _set_and_pr architecture $tsc
 _set_and_pr community $tsc
+_set_and_pr coderabbit $tsc
 
 # both maintainer groups
 _set_and_pr helm-charts $go $node
 _set_and_pr handbook $go $node
 _set_and_pr platform-mesh.github.io $go $node
 
+# tsc and both maintainers
+_set_and_pr backlog $tsc $go $node
+_set_and_pr backlog-internal $tsc $go $node
+
 # go repos
 _set_and_pr ai-configurations $go
-_set_and_pr backlog $go
-_set_and_pr backlog-internal $go
-_set_and_pr coderabbit $go
 _set_and_pr contrib-examples $go
 _set_and_pr custom-images $go
 _set_and_pr example-api-extraction $go

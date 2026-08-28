@@ -2,9 +2,9 @@
 | --- | --- | --- |
 | ai-configurations | CODEOWNERS | * @platform-mesh/go-maintainers |
 | architecture | CODEOWNERS | * @platform-mesh/tsc |
-| backlog-internal | CODEOWNERS | * @platform-mesh/go-maintainers |
-| backlog | CODEOWNERS | * @platform-mesh/go-maintainers |
-| coderabbit | CODEOWNERS | * @platform-mesh/go-maintainers |
+| backlog-internal | CODEOWNERS | * @platform-mesh/tsc @platform-mesh/go-maintainers @platform-mesh/node-maintainers |
+| backlog | CODEOWNERS | * @platform-mesh/tsc @platform-mesh/go-maintainers @platform-mesh/node-maintainers |
+| coderabbit | CODEOWNERS | * @platform-mesh/tsc |
 | community | CODEOWNERS | * @platform-mesh/tsc |
 | contrib-examples | CODEOWNERS | * @platform-mesh/go-maintainers |
 | custom-images | CODEOWNERS | * @platform-mesh/go-maintainers |
