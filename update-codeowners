@@ -6,12 +6,16 @@ die() { echo "$@" >&2; exit 1; }
 org=platform-mesh
 branch=codeowners-cleanup
 
-codeowners_file() {
-    local dir=$1
-    for candidate in CODEOWNERS .github/CODEOWNERS docs/CODEOWNERS; do
-        [[ -f $dir/$candidate ]] && { echo "$dir/$candidate"; return; }
-    done
-    echo "$dir/CODEOWNERS"
+ownerless_patterns() {
+    local dir=$1 file rel prefix line
+    find "$dir" -name .git -prune -o -name CODEOWNERS -print | while read -r file; do
+        rel=${file#$dir/}
+        prefix=$(dirname "$rel")
+        [[ $prefix == . || $prefix == .github || $prefix == docs ]] && prefix=""
+        grep -v '^\s*\(#\|$\)' "$file" | grep -v '@' | while read -r line; do
+            echo "${prefix:+$prefix/}$line"
+        done
+    done | sort -u
 }
 
 _set() {
@@ -19,7 +23,17 @@ _set() {
     test $# -gt 0 || die "no owners given"
     local dir=repos/$name
     test -d "$dir" || die "no clone at $dir"
-    echo "* $@" > "$(codeowners_file "$dir")"
+    local patterns
+    patterns=$(ownerless_patterns "$dir")
+    find "$dir" -name .git -prune -o -name CODEOWNERS -print -delete > /dev/null
+    {
+        echo "* $@"
+        test -n "$patterns" && {
+            echo
+            echo "# ownerless so renovate can auto-merge updates"
+            echo "$patterns"
+        }
+    } > "$dir/CODEOWNERS"
     log "$name: * $@"
 }
 
@@ -49,8 +63,56 @@ _pr() {
 _set_and_pr() {
     local name=$1
     shift
-    _set $1 "$@"
-    _pr $1
+    _set "$name" "$@"
+    # _pr "$name"
 }
 
-# TODO
+go=@platform-mesh/go-maintainers
+node=@platform-mesh/node-maintainers
+tsc=@platform-mesh/tsc
+
+# tsc owner
+_set_and_pr architecture $tsc
+_set_and_pr community $tsc
+
+# both maintainer groups
+_set_and_pr helm-charts $go $node
+_set_and_pr handbook $go $node
+_set_and_pr platform-mesh.github.io $go $node
+
+# go repos
+_set_and_pr ai-configurations $go
+_set_and_pr backlog $go
+_set_and_pr backlog-internal $go
+_set_and_pr coderabbit $go
+_set_and_pr contrib-examples $go
+_set_and_pr custom-images $go
+_set_and_pr example-api-extraction $go
+_set_and_pr external-ocm-components $go
+_set_and_pr gardener-workspace $go
+_set_and_pr go-vanity-urls $go
+_set_and_pr hackathon-cascading-rbac-operator $go
+_set_and_pr hackathon-openfga-teleport-integration $go
+_set_and_pr jl $go
+_set_and_pr kbind-provider $go
+_set_and_pr kcp-migration-operator $go
+_set_and_pr loadtest-internals $go
+_set_and_pr mcp-integration $go
+_set_and_pr mongodb-demo $go
+_set_and_pr opendesk $go
+_set_and_pr platform-mesh $go
+_set_and_pr poc-kcp-intro $go
+_set_and_pr provider-quickstart $go
+_set_and_pr qbrtool $go
+_set_and_pr resource-sharding-operator $go
+_set_and_pr samples-opendesk-ocm-landscaper $go
+_set_and_pr terminal-controller-manager $go
+_set_and_pr upstream-images $go
+
+# node repos
+_set_and_pr generic-resource-ui $node
+_set_and_pr iam-ui $node
+_set_and_pr marketplace-ui $node
+_set_and_pr portal $node
+_set_and_pr portal-server-lib $node
+_set_and_pr portal-ui-lib $node
