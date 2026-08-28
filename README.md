@@ -14,7 +14,12 @@ so no one but release-manager could merge PRs.
 
 The default branch is guarded by the next rule.
 
+repository admins are excluded - generally these shouldn't be set but
+when setting up a repository there needs to be a way for a non-admin to
+do the setup.
+
 release-managers are excluded to update release branches.
+bots like renovate and platform-mesh-publisher are excluded because they need to create and update branches to create PRs from.
 
 ## rulesets/default-branch.json
 
@@ -23,6 +28,13 @@ Requires PRs with a code owner review.
 
 release-managers are not excluded.
 
+repository admins are excluded - generally these shouldn't be set but
+when setting up a repository there needs to be a way for a non-admin to
+do the setup.
+
 ## rulesets/tags.json
 
 Same as branches but for tags.
+Here only platform-mesh-publisher is excluded because it creates tags for release candidates and builds.
+
+repository admins are not exclude.
