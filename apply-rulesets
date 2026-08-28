@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+log() { echo ">>> $@"; }
+die() { echo "$@" >&2; exit 1; }
+
+org=platform-mesh
+
+ruleset_name() {
+    jq -r .name "$1"
+}
+
+ruleset_id() {
+    gh api "orgs/$org/rulesets" --paginate -q ".[] | select(.name == \"$1\") | .id"
+}
+
+# only diff fields we care about with sorted actors
+normalize='{name, target, enforcement, conditions, rules, bypass_actors: ((.bypass_actors // []) | sort_by(.actor_type, .actor_id))}'
+
+live_normalized() {
+    gh api "orgs/$org/rulesets/$1" | jq -S "$normalize"
+}
+
+local_normalized() {
+    jq -S "$normalize" "$1"
+}
+
+_diff() {
+    for file in rulesets/*.json; do
+        name=$(ruleset_name "$file")
+        id=$(ruleset_id "$name")
+        if [[ -z $id ]]; then
+            log "$name: missing live (would create from $file)"
+            continue
+        fi
+        if diff -u <(live_normalized "$id") <(local_normalized "$file") > /tmp/ruleset.diff; then
+            log "$name: in sync"
+        else
+            log "$name: differs (live vs $file)"
+            cat /tmp/ruleset.diff
+        fi
+    done
+}
+
+_apply() {
+    for file in rulesets/*.json; do
+        name=$(ruleset_name "$file")
+        id=$(ruleset_id "$name")
+        if [[ -n $id ]]; then
+            log "updating '$name' (id $id)"
+            gh api -X PUT "orgs/$org/rulesets/$id" --input "$file" > /dev/null || die "update of $name failed"
+        else
+            log "creating '$name'"
+            gh api -X POST "orgs/$org/rulesets" --input "$file" > /dev/null || die "creation of $name failed"
+        fi
+    done
+}
+
+subcmd="$1"
+shift
+
+case "$subcmd" in
+    (diff) _diff;;
+    (apply) _apply;;
+    (*) die "Unknown subcommand: $subcmd";;
+esac
