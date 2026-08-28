@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+log() { echo ">>> $@"; }
+die() { echo "$@" >&2; exit 1; }
+
+org=platform-mesh
+
+each_repo() {
+    gh repo list "$org" --no-archived --limit 200 --json name -q '.[].name'
+}
+
+contributors_members() {
+    gh api "orgs/$org/teams/contributors/members" --paginate -q '.[].login'
+}
+
+_missing-from-contributors() {
+    local contributors
+    contributors=" $(contributors_members | tr '\n' ' ') "
+    for name in $(each_repo); do
+        for user in $(gh api "repos/$org/$name/collaborators?affiliation=direct" --paginate -q '.[].login'); do
+            [[ $contributors == *" $user "* ]] || echo "$user"
+        done
+    done | sort -u
+}
+
+_drop-covered-teams() {
+    for name in $(each_repo); do
+        log "$name"
+        for team in $(gh api "repos/$org/$name/teams" --paginate -q '.[].slug'); do
+            case "$team" in
+                (tsc|security|contributors) ;;
+                (*) continue;;
+            esac
+            gh api -X DELETE "orgs/$org/teams/$team/repos/$org/$name" \
+                && echo "    removed team $team" \
+                || log "removing team $team from $name failed"
+        done
+    done
+}
+
+subcmd="$1"
+shift
+
+case "$subcmd" in
+    (missing-from-contributors) _missing-from-contributors;;
+    (drop-covered-teams) _drop-covered-teams;;
+    (*) die "Unknown subcommand: $subcmd";;
+esac

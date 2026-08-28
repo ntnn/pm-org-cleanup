@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+log() { echo ">>> $@"; }
+die() { echo "$@" >&2; exit 1; }
+
+org=platform-mesh
+
+for name in $(gh repo list "$org" --no-archived --limit 200 --json name -q '.[].name'); do
+    log "$name"
+    # affiliation=direct excludes org- and team-derived access
+    gh api "repos/$org/$name/collaborators?affiliation=direct" --paginate \
+        -q '.[] | "    user: " + .login + " -> " + .role_name' \
+        || log "listing collaborators failed for $name"
+    gh api "repos/$org/$name/teams" --paginate \
+        -q '.[] | "    team: " + .slug + " -> " + .permission' \
+        || log "listing teams failed for $name"
+done
