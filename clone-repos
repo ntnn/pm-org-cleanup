@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+log() { echo ">>> $@"; }
+die() { echo "$@" >&2; exit 1; }
+
+org=platform-mesh
+user=$(gh api user -q .login) || die "gh not authenticated"
+
+mkdir -p repos || die "cannot create repos dir"
+
+mapfile -t names < <(gh repo list "$org" --no-archived --limit 200 --json name -q '.[].name')
+test ${#names[@]} -gt 0 || die "no repositories found in $org"
+
+for name in "${names[@]}"; do
+    log "$name"
+    fork="$user/pm-$name"
+
+    if ! gh repo view "$fork" &> /dev/null; then
+        gh repo fork "$org/$name" --fork-name "pm-$name" --clone=false || { log "fork of $name failed"; continue; }
+    fi
+
+    dir="repos/$name"
+    if [[ ! -d $dir ]]; then
+        git clone "https://github.com/$org/$name" "$dir" || { log "clone of $name failed"; continue; }
+    fi
+
+    git -C "$dir" remote rename origin upstream 2> /dev/null
+    git -C "$dir" remote get-url origin &> /dev/null \
+        || git -C "$dir" remote add origin "https://github.com/$fork"
+    git -C "$dir" fetch origin || log "fetch origin failed for $name"
+done

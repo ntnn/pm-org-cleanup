@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+die() { echo "$@" >&2; exit 1; }
+
+test -d repos || die "repos dir missing - run ./clone-repos first"
+
+echo "| repo | path | CODEOWNERS |"
+echo "| --- | --- | --- |"
+for dir in repos/*/; do
+    name=$(basename "$dir")
+    mapfile -t files < <(find "$dir" -name .git -prune -o -name CODEOWNERS -print | sort)
+    if [[ ${#files[@]} -eq 0 ]]; then
+        echo "| $name | (none) | |"
+        continue
+    fi
+    for file in "${files[@]}"; do
+        # strip comments/blanks, join lines with <br> for the table cell
+        content=$(grep -v '^\s*\(#\|$\)' "$file" | paste -sd '¶' - | sed 's/¶/<br>/g')
+        echo "| $name | ${file#$dir} | $content |"
+    done
+done

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+log() { echo ">>> $@"; }
+die() { echo "$@" >&2; exit 1; }
+
+org=platform-mesh
+branch=codeowners-cleanup
+
+codeowners_file() {
+    local dir=$1
+    for candidate in CODEOWNERS .github/CODEOWNERS docs/CODEOWNERS; do
+        [[ -f $dir/$candidate ]] && { echo "$dir/$candidate"; return; }
+    done
+    echo "$dir/CODEOWNERS"
+}
+
+_set() {
+    local name=$1; shift
+    test $# -gt 0 || die "no owners given"
+    local dir=repos/$name
+    test -d "$dir" || die "no clone at $dir"
+    echo "* $@" > "$(codeowners_file "$dir")"
+    log "$name: * $@"
+}
+
+_pr() {
+    local name=$1
+    local dir=repos/$name
+    test -d "$dir" || die "no clone at $dir"
+
+    local default
+    default=$(git -C "$dir" symbolic-ref --short refs/remotes/upstream/HEAD | cut -d/ -f2) \
+        || die "$name: cannot determine default branch"
+
+    git -C "$dir" switch -c "$branch" 2> /dev/null || git -C "$dir" switch "$branch"
+    git -C "$dir" add -A -- '*CODEOWNERS'
+    git -C "$dir" diff --cached --quiet && { log "$name: no changes"; return; }
+    git -C "$dir" commit -m "Restrict CODEOWNERS to maintainer teams" || die "$name: commit failed"
+    git -C "$dir" push -u origin "$branch" || die "$name: push failed"
+    (cd "$dir" && gh pr create \
+        --repo "$org/$name" \
+        --base "$default" \
+        --head "$(gh api user -q .login):$branch" \
+        --title "Restrict CODEOWNERS to maintainer teams" \
+        --body "Part of the GitHub organisation cleanup decided in the TSC on 2026-08-19.") \
+        || die "$name: PR creation failed"
+}
+
+_set_and_pr() {
+    local name=$1
+    shift
+    _set $1 "$@"
+    _pr $1
+}
+
+# TODO
