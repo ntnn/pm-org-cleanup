@@ -37,7 +37,7 @@ _set() {
     log "$name: * $@"
 }
 
-_pr() {
+_commit() {
     local name=$1
     local dir=repos/$name
     test -d "$dir" || die "no clone at $dir"
@@ -51,6 +51,13 @@ _pr() {
     git -C "$dir" diff --cached --quiet && { log "$name: no changes"; return; }
     git -C "$dir" commit -m "Restrict CODEOWNERS to maintainer teams" || die "$name: commit failed"
     git -C "$dir" push -u origin "$branch" || die "$name: push failed"
+}
+
+_pr() {
+    local name=$1
+    local dir=repos/$name
+    test -d "$dir" || die "no clone at $dir"
+
     local url
     url=$(cd "$dir" && gh pr create \
         --repo "$org/$name" \
@@ -66,8 +73,9 @@ _pr() {
 _set_and_pr() {
     local name=$1
     shift
-    _set "$name" "$@"
-    # _pr "$name"
+    # _set "$name" "$@"
+    # _commit "$name"
+    _pr "$name"
 }
 
 go=@platform-mesh/go-maintainers
