@@ -1,7 +1,7 @@
 {
     "name": "all branches - signed commits",
     "target": "branch",
-    "enforcement": "evaluate",
+    "enforcement": "active",
     "conditions": {
         "ref_name": {
             "include": ["~ALL"],
