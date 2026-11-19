@@ -7,7 +7,7 @@
             "include": ["~ALL"],
             "exclude": [
                 "~DEFAULT_BRANCH",
-                "refs/heads/gh-readonly-queue/**",
+                "refs/heads/gh-readonly-queue/**/*",
                 "refs/heads/release-*"
             ]
         },
