@@ -1,0 +1,24 @@
+{
+    "name": "merge queue branches",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+        "ref_name": {
+            "include": ["refs/heads/gh-readonly-queue/**/*"],
+            "exclude": []
+        },
+        "repository_name": {
+            "include": ["~ALL"],
+            "exclude": []
+        }
+    },
+    "rules": [
+        { "type": "creation" },
+        { "type": "update" },
+        { "type": "deletion" },
+        { "type": "non_fast_forward" }
+    ],
+    "bypass_actors": [
+        { "actor_id": 262318, "actor_type": "Integration", "bypass_mode": "always" }
+    ]
+}

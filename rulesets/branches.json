@@ -1,5 +1,5 @@
 {
-    "name": "branches - release-managers only",
+    "name": "branches - deny all",
     "target": "branch",
     "enforcement": "active",
     "conditions": {
@@ -8,6 +8,7 @@
             "exclude": [
                 "~DEFAULT_BRANCH",
                 "refs/heads/gh-readonly-queue/**/*",
+                "refs/heads/renovate/**/*",
                 "refs/heads/release-*"
             ]
         },
@@ -22,7 +23,5 @@
         { "type": "deletion" },
         { "type": "non_fast_forward" }
     ],
-    "bypass_actors": [
-        { "actor_id": 19214021, "actor_type": "Team", "bypass_mode": "always" }
-    ]
+    "bypass_actors": []
 }

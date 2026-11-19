@@ -1,11 +1,11 @@
 {
-    "name": "tags - release-managers only",
+    "name": "tags - deny all",
     "target": "tag",
     "enforcement": "active",
     "conditions": {
         "ref_name": {
             "include": ["~ALL"],
-            "exclude": []
+            "exclude": ["refs/tags/v*"]
         },
         "repository_name": {
             "include": ["~ALL"],
@@ -18,7 +18,5 @@
         { "type": "deletion" },
         { "type": "non_fast_forward" }
     ],
-    "bypass_actors": [
-        { "actor_id": 19214021, "actor_type": "Team", "bypass_mode": "always" }
-    ]
+    "bypass_actors": []
 }

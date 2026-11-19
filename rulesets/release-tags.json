@@ -1,0 +1,25 @@
+{
+    "name": "release tags",
+    "target": "tag",
+    "enforcement": "active",
+    "conditions": {
+        "ref_name": {
+            "include": ["refs/tags/v*"],
+            "exclude": []
+        },
+        "repository_name": {
+            "include": ["~ALL"],
+            "exclude": []
+        }
+    },
+    "rules": [
+        { "type": "creation" },
+        { "type": "update" },
+        { "type": "deletion" },
+        { "type": "non_fast_forward" }
+    ],
+    "bypass_actors": [
+        { "actor_id": 19214021, "actor_type": "Team", "bypass_mode": "always" },
+        { "actor_id": 1415820, "actor_type": "Integration", "bypass_mode": "always" }
+    ]
+}
