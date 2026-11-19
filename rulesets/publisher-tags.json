@@ -1,0 +1,24 @@
+{
+    "name": "publisher tags",
+    "target": "tag",
+    "enforcement": "active",
+    "conditions": {
+        "ref_name": {
+            "include": ["refs/tags/[0-9]*.[0-9]*.[0-9]*"],
+            "exclude": []
+        },
+        "repository_name": {
+            "include": ["~ALL"],
+            "exclude": []
+        }
+    },
+    "rules": [
+        { "type": "creation" },
+        { "type": "update" },
+        { "type": "deletion" },
+        { "type": "non_fast_forward" }
+    ],
+    "bypass_actors": [
+        { "actor_id": 1415820, "actor_type": "Integration", "bypass_mode": "always" }
+    ]
+}
