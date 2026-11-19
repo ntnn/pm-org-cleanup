@@ -1,0 +1,24 @@
+{
+    "name": "publisher branches",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+        "ref_name": {
+            "include": ["refs/heads/bump/**/*"],
+            "exclude": []
+        },
+        "repository_name": {
+            "include": ["~ALL"],
+            "exclude": []
+        }
+    },
+    "rules": [
+        { "type": "creation" },
+        { "type": "update" },
+        { "type": "deletion" },
+        { "type": "non_fast_forward" }
+    ],
+    "bypass_actors": [
+        { "actor_id": 1415820, "actor_type": "Integration", "bypass_mode": "always" }
+    ]
+}

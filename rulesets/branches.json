@@ -9,6 +9,7 @@
                 "~DEFAULT_BRANCH",
                 "refs/heads/gh-readonly-queue/**/*",
                 "refs/heads/renovate/**/*",
+                "refs/heads/bump/**/*",
                 "refs/heads/release-*"
             ]
         },
